@@ -4,16 +4,19 @@ import { createScene } from "./components/scene";
 import { createRenderer } from "./systems/renderer";
 import { createLights } from "./components/lights.js";
 import { Resizer } from "./systems/Resizer.js";
+import { Loop } from "./systems/Loop.js";
 
 class World {
   #camera;
   #scene;
   #renderer;
+  #loop;
 
   constructor(container) {
     this.#camera = createCamera();
     this.#scene = createScene();
     this.#renderer = createRenderer();
+    this.#loop = new Loop(this.#camera, this.#scene, this.#renderer);
     container.append(this.#renderer.domElement);
 
     const cubes = createCube();
@@ -30,6 +33,14 @@ class World {
 
   render() {
     this.#renderer.render(this.#scene, this.#camera);
+  }
+
+  start() {
+    this.#loop.start();
+  }
+
+  stop() {
+    this.#loop.stop();
   }
 }
 
