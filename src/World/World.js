@@ -5,6 +5,7 @@ import { createRenderer } from "./systems/renderer";
 import { createLights } from "./components/lights.js";
 import { Resizer } from "./systems/Resizer.js";
 import { Loop } from "./systems/Loop.js";
+import { createControls } from "./systems/controls.js";
 
 class World {
   #camera;
@@ -24,9 +25,11 @@ class World {
     this.#scene.add(cubes.cube2);
     cubes.cube2.position.set(0, 2, 0);
     cubes.cube2.scale.set(0.5, 0.5, 0.5);
+    const controls = createControls(this.#camera, this.#renderer.domElement);
 
     const light = createLights();
     this.#scene.add(light);
+    this.#loop.updatables.push(controls);
 
     const resizer = new Resizer(container, this.#camera, this.#renderer);
   }
