@@ -1,19 +1,20 @@
+class MouseState {
+  leftClick = false;
+  rightClick = false;
+  mouseDeltaX = 0;
+  mouseDeltaY = 0;
+}
+
 export class InputHandler {
-  constructor() {
-    this.init();
+  constructor(renderer) {
+    this.init(renderer);
   }
-  init() {
-    this.current = {
-      leftClick: false,
-      rightClick: false,
-      mouseX: 0,
-      mouseY: 0,
-      mouseDeltaX: 0,
-      mouseDeltaY: 0,
-    };
-    this.previous = null;
-    this.keys = {};
-    this.previousKeys = {};
+  init(renderer) {
+    this.renderer = renderer;
+    this.mouseState = new MouseState();
+    this.keys = new Map();
+    // this.previous = null;
+    // this.previousKeys = {};
 
     document.addEventListener(
       "mousedown",
@@ -38,50 +39,89 @@ export class InputHandler {
     document.addEventListener("keydown", (event) => {
       this.onKeyDown(event);
     });
+
+    // handle point lock:
+    const addPointerLockEvent = async () => {
+      await this.renderer.domElement.requestPointerLock();
+    };
+    this.renderer.domElement.addEventListener("click", addPointerLockEvent);
+    this.renderer.domElement.addEventListener("mousedown", addPointerLockEvent);
+
+    const setPoniterLocked = () => {
+      this.pointerLocked =
+        document.pointerLockElement === this.renderer.domElement;
+    };
+    document.addEventListener("pointerlockchange", setPoniterLocked, false);
   }
 
   onMouseDown(event) {
-    switch (event.button) {
-      case 0: {
-        this.current.leftClick = true;
-        break;
-      }
-      case 2: {
-        this.current.rightClick = true;
-        break;
+    if (this.pointerLocked) {
+      this.onMouseMove(event);
+      switch (event.button) {
+        case 0: {
+          this.mouseState.leftClick = true;
+          break;
+        }
+        case 2: {
+          this.mouseState.rightClick = true;
+          break;
+        }
       }
     }
   }
   onMouseUp(event) {
-    switch (event.button) {
-      case 0: {
-        this.current.leftClick = false;
-        break;
-      }
-      case 2: {
-        this.current.rightClick = false;
-        break;
+    if (this.pointerLocked) {
+      this.onMouseMove(event);
+      switch (event.button) {
+        case 0: {
+          this.mouseState.leftClick = false;
+          break;
+        }
+        case 2: {
+          this.mouseState.rightClick = false;
+          break;
+        }
       }
     }
   }
   onMouseMove(event) {
-    this.current.mouseX = event.pageX - window.innerWidth / 2;
-    this.current.mouseY = event.pageY - window.innerHeight / 2;
-    if (this.previous === null) {
-      this.previous = { ...this.current };
+    if (this.pointerLocked) {
+      this.mouseState.mouseDeltaX = event.movementX;
+      this.mouseState.mouseDeltaY = event.movementY;
     }
-
-    this.current.mouseDeltaX = this.current.mouseX - this.previous.mouseX;
-    this.current.mouseDeltaY = this.current.mouseY - this.previous.mouseY;
   }
+
   onKeyDown(event) {
-    this.keys[event.keyCode] = true;
+    if (this.pointerLocked) {
+      this.keys.set(event.code, true);
+    }
   }
   onKeyUp(event) {
-    this.keys[event.keyCode] = false;
+    if (this.pointerLocked) {
+      this.keys.set(event.code, false);
+    }
+  }
+
+  isKeyDown(keyCode) {
+    if (this.pointerLocked) {
+      const hasKey = this.keys.get(keyCode);
+      if (hasKey) {
+        return hasKey;
+      }
+    }
+    return false;
+  }
+
+  runFunctionByKey(keyCode, action, inaction) {
+    if (this.isKeyDown(keyCode)) {
+      return action();
+    } else {
+      return inaction();
+    }
   }
 
   update() {
-    this.previous = { ...this.current };
+    this.mouseState.mouseDeltaX = 0;
+    this.mouseState.mouseDeltaY = 0;
   }
 }

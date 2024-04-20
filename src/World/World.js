@@ -19,9 +19,9 @@ class World {
 
   constructor(container) {
     let camera = createCamera();
-    this.#fpsCamera = new FpsCamera(camera);
     this.#scene = createScene();
     this.#renderer = createRenderer();
+    this.#fpsCamera = new FpsCamera(camera, this.#renderer);
     this.#loop = new Loop(this.#fpsCamera.camera, this.#scene, this.#renderer);
     container.append(this.#renderer.domElement);
 
