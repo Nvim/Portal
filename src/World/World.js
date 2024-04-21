@@ -25,6 +25,8 @@ class World {
     this.#loop = new Loop(this.#fpsCamera.camera, this.#scene, this.#renderer);
     container.append(this.#renderer.domElement);
 
+    const controls = this.stop();
+
     const floor = createFloor();
     const meshGroup = createMeshGroup();
     const { light, ambientLight } = createLights();
