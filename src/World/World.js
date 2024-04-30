@@ -5,17 +5,23 @@ import { createRenderer } from "./systems/renderer";
 import { createLights } from "./components/lights.js";
 import { Resizer } from "./systems/Resizer.js";
 import { Loop } from "./systems/Loop.js";
-import { createControls } from "./systems/orbitControls.js";
 import { createFloor } from "./components/floor.js";
 import { KeyDisplay } from "./systems/KeyDisplay.js";
-import { createFPSControls } from "./systems/fpsControls.js";
 import { FpsCamera } from "./components/FpsCamera.js";
+import { createSphere } from "./components/sphere.js";
+import { getRapier } from "./components/initRapier.js";
+
+export let usePhysics = () => {};
+export let usePhysicsObjects = () => {};
 
 class World {
   #fpsCamera;
   #scene;
   #renderer;
   #loop;
+  #rapier;
+  #physicsObjects = [];
+  #physicsWorld;
 
   constructor(container) {
     let camera = createCamera();
@@ -25,22 +31,10 @@ class World {
     this.#loop = new Loop(this.#fpsCamera.camera, this.#scene, this.#renderer);
     container.append(this.#renderer.domElement);
 
-    const controls = this.stop();
-
-    const floor = createFloor();
-    const meshGroup = createMeshGroup();
-    const { light, ambientLight } = createLights();
-    // const controls = createControls(this.#camera, this.#renderer.domElement);
-    // const controls = createFPSControls(
-    //   this.#fpsCamera.camera,
-    //   this.#renderer.domElement,
-    // );
+    this.#loop.updatables.push(this.#fpsCamera);
+    // const meshGroup = createMeshGroup();
     // const keyDisplay = new KeyDisplay();
     // keyDisplay.listen();
-
-    this.#loop.updatables.push(this.#fpsCamera);
-
-    this.#scene.add(meshGroup, ambientLight);
 
     const resizer = new Resizer(
       container,
@@ -48,7 +42,7 @@ class World {
       this.#renderer,
     );
     resizer.onResize = () => {
-      controls.handleResize;
+      //controls.handleResize;
     };
   }
 
@@ -56,7 +50,25 @@ class World {
     this.#renderer.render(this.#scene, this.#fpsCamera.camera);
   }
 
-  start() {
+  // init physics here since i cant in constructor
+  async start() {
+    this.#rapier = await getRapier();
+    let gravity = { x: 0, y: -9.81, z: 0 };
+    this.#physicsWorld = new this.#rapier.World(gravity);
+    usePhysics = () => {
+      return { rapier: this.#rapier, world: this.#physicsWorld };
+    };
+    usePhysicsObjects = () => {
+      return this.#physicsObjects;
+    };
+    const { light, ambientLight } = createLights();
+
+    const sphere = createSphere();
+    const floor = createFloor();
+
+    this.#scene.add(floor.mesh, sphere.mesh, ambientLight);
+    this.#loop.updatables.push(sphere);
+
     this.#loop.start();
   }
 

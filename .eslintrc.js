@@ -7,6 +7,7 @@ module.exports = {
     "no-restricted-syntax": "off",
     "array-bracket-spacing": "off",
     "key-spacing": "off",
+    "no-console": "off",
     // "prettier/prettier": [
     //   "error",
     //   { singleQuote: false, trailingComma: "none" },

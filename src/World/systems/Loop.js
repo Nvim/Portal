@@ -1,4 +1,5 @@
 import { Clock } from "three";
+import { usePhysics } from "../World.js";
 
 // module scope
 const clock = new Clock();
@@ -18,6 +19,8 @@ class Loop {
   tick() {
     // time between last 2 frames:
     const delta = clock.getDelta();
+    const { rapier, world } = usePhysics();
+    world.step();
     for (const object of this.updatables) {
       object.tick(delta);
     }

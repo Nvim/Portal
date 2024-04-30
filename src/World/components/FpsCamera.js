@@ -26,6 +26,7 @@ function clamp(x, a, b) {
 export class FpsCamera {
   constructor(camera, renderer) {
     this.camera = camera;
+    this.camera.position.set(0, 5, 10);
     this.renderer = renderer;
     this.input = new InputHandler(renderer);
     this.rotation = new Quaternion();
@@ -79,6 +80,7 @@ export class FpsCamera {
     sideVelocity *= timeElapsedS;
     forwardVelocity *= timeElapsedS;
 
+    //  TODO : use rapier to calculate translation with velocity
     this.translation.set(sideVelocity, 0, forwardVelocity);
   }
 }
